@@ -76,7 +76,8 @@ class Client(baseClient):
             rawResponse = self.sendMessage(self.cachedDirectoryServerAddress,
                                            RequestAssembler.assembleGetFileListFromServerRequest())
             response = json.loads(rawResponse)
-            print('=== Get File List From Directory Server ===\nFile List: {}'.format(response['fileList']))
+            if self.output != 'false':
+                print('=== Get File List From Directory Server ===\nFile List: {}'.format(response['fileList']))
         except ServerError:
             self.switchBackupServer()
             self.requestGetFileListFromServer()
@@ -108,7 +109,8 @@ class Client(baseClient):
                     rawResponse = self.sendMessage(self.cachedNodeAddress,
                                                    RequestAssembler.assembleReadFileRequest(fileName))
                     response = json.loads(rawResponse)
-                    print('=== Read File ===\nFile Name: {}\nContent: {}'.format(fileName, response['content']))
+                    if self.output != false:
+                        print('=== Read File ===\nFile Name: {}\nContent: {}'.format(fileName, response['content']))
                     break
                 except ServerError:
                     self.requestRemoveNode(self.cachedNodeId)
@@ -123,7 +125,8 @@ class Client(baseClient):
                     rawResponse = self.sendMessage(self.cachedNodeAddress,
                                                    RequestAssembler.assembleGetFileListFromNodeRequest())
                     response = json.loads(rawResponse)
-                    print('=== Get File List From Node ===\nFile List: {}'.format(response['fileList']))
+                    if self.output != 'false':
+                        print('=== Get File List From Node ===\nFile List: {}'.format(response['fileList']))
                     break
                 except ServerError:
                     self.requestRemoveNode(self.cachedNodeId)
@@ -151,4 +154,4 @@ class Client(baseClient):
                                     RequestAssembler.assembleStorageNodeRemoveRequest(str(nodeId)))
         except ServerError:
             self.switchBackupServer()
-            self.requestRemoveNode()
+            self.requestRemoveNode(nodeId)
