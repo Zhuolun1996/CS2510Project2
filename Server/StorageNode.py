@@ -101,13 +101,13 @@ class StorageNode(Server, baseClient):
                 file.write(bytes(content, 'utf-8'))
             self.fileList.append(fileName)
         if forward:
-            try:
-                self.sendMessage(self.cachedDirectoryServerAddress,
-                                 RequestAssembler.assembleNewFileRequest(fileName, content))
-            except ServerError:
-                self.switchBackupServer()
-                self.sendMessage(self.cachedDirectoryServerAddress,
-                                 RequestAssembler.assembleNewFileRequest(fileName, content))
+            while True:
+                try:
+                    self.sendMessage(self.cachedDirectoryServerAddress,
+                                     RequestAssembler.assembleNewFileRequest(fileName, content))
+                    break
+                except ServerError:
+                    self.switchBackupServer()
         return ResponseAssembler.assembleAddFileResponse(True)
 
     def createReadFileResponse(self, fileName):
@@ -121,15 +121,14 @@ class StorageNode(Server, baseClient):
         return ResponseAssembler.assembleGetFileListFromNodeResponse(self.fileList)
 
     def requestJoinNetwork(self):
-        try:
-            rawResponse = self.sendMessage(self.cachedDirectoryServerAddress,
-                                           RequestAssembler.assembleJoinNetworkRequest(self.id, self.address[0],
-                                                                                       self.address[1]))
-        except ServerError:
-            self.switchBackupServer()
-            rawResponse = self.sendMessage(self.cachedDirectoryServerAddress,
-                                           RequestAssembler.assembleJoinNetworkRequest(self.id, self.address[0],
-                                                                                       self.address[1]))
+        while True:
+            try:
+                rawResponse = self.sendMessage(self.cachedDirectoryServerAddress,
+                                               RequestAssembler.assembleJoinNetworkRequest(self.id, self.address[0],
+                                                                                           self.address[1]))
+                break
+            except ServerError:
+                self.switchBackupServer()
         response = json.loads(rawResponse)
         if response['result'] != True:
             raise Exception('Join Network Error')
@@ -140,13 +139,12 @@ class StorageNode(Server, baseClient):
             return content
 
     def requestGetBackupServer(self):
-        try:
-            return self.sendMessage(self.cachedDirectoryServerAddress,
-                                    RequestAssembler.assembleGetBackupServerRequest())
-        except ServerError:
-            self.switchBackupServer()
-            return self.sendMessage(self.cachedDirectoryServerAddress,
-                                    RequestAssembler.assembleGetBackupServerRequest())
+        while True:
+            try:
+                return self.sendMessage(self.cachedDirectoryServerAddress,
+                                        RequestAssembler.assembleGetBackupServerRequest())
+            except ServerError:
+                self.switchBackupServer()
 
     def getBackupServer(self):
         rawResponse = self.requestGetBackupServer()

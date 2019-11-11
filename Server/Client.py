@@ -68,7 +68,6 @@ class Client(baseClient):
             self.cachedNodeId = response['nodeId']
             self.cachedNodeAddress = (response['nodeIp'], response['nodePort'])
         except ServerError:
-            print('cached')
             self.switchBackupServer()
             self.requestConnect()
 
@@ -88,74 +87,48 @@ class Client(baseClient):
                              RequestAssembler.assembleNewFileRequest(fileName, content))
         except ServerError:
             self.switchBackupServer()
-            self.requestGetFileListFromServer()
+            self.requestNewFile(fileName, content)
 
     def requestAddFile(self, fileName, content):
         if self.cachedNodeAddress != None:
-            try:
-                self.sendMessage(self.cachedNodeAddress,
-                                 RequestAssembler.assembleAddFileRequest(fileName, content, True))
-            except ServerError:
-                self.requestRemoveNode(self.cachedNodeId)
-                self.requestConnect()
+            while True:
                 try:
                     self.sendMessage(self.cachedNodeAddress,
                                      RequestAssembler.assembleAddFileRequest(fileName, content, True))
+                    break
                 except ServerError:
                     self.requestRemoveNode(self.cachedNodeId)
                     self.requestConnect()
-                    self.sendMessage(self.cachedNodeAddress,
-                                     RequestAssembler.assembleAddFileRequest(fileName, content, True))
         else:
             raise Exception('Need Connect To Directory Server First')
 
     def requestReadFile(self, fileName):
         if self.cachedNodeAddress != None:
-            try:
-                rawResponse = self.sendMessage(self.cachedNodeAddress,
-                                               RequestAssembler.assembleReadFileRequest(fileName))
-                response = json.loads(rawResponse)
-                print('=== Read File ===\nFile Name: {}\nContent: {}'.format(fileName, response['content']))
-            except ServerError:
-                self.requestRemoveNode(self.cachedNodeId)
-                self.requestConnect()
+            while True:
                 try:
                     rawResponse = self.sendMessage(self.cachedNodeAddress,
                                                    RequestAssembler.assembleReadFileRequest(fileName))
                     response = json.loads(rawResponse)
                     print('=== Read File ===\nFile Name: {}\nContent: {}'.format(fileName, response['content']))
+                    break
                 except ServerError:
                     self.requestRemoveNode(self.cachedNodeId)
                     self.requestConnect()
-                    rawResponse = self.sendMessage(self.cachedNodeAddress,
-                                                   RequestAssembler.assembleReadFileRequest(fileName))
-                    response = json.loads(rawResponse)
-                    print('=== Read File ===\nFile Name: {}\nContent: {}'.format(fileName, response['content']))
         else:
             raise Exception('Need Connect To Directory Server First')
 
     def requestGetFileListFromNode(self):
         if self.cachedNodeAddress != None:
-            try:
-                rawResponse = self.sendMessage(self.cachedNodeAddress,
-                                               RequestAssembler.assembleGetFileListFromNodeRequest())
-                response = json.loads(rawResponse)
-                print('=== Get File List From Node ===\nFile List: {}'.format(response['fileList']))
-            except ServerError:
-                self.requestRemoveNode(self.cachedNodeId)
-                self.requestConnect()
+            while True:
                 try:
                     rawResponse = self.sendMessage(self.cachedNodeAddress,
                                                    RequestAssembler.assembleGetFileListFromNodeRequest())
                     response = json.loads(rawResponse)
                     print('=== Get File List From Node ===\nFile List: {}'.format(response['fileList']))
+                    break
                 except ServerError:
                     self.requestRemoveNode(self.cachedNodeId)
                     self.requestConnect()
-                    rawResponse = self.sendMessage(self.cachedNodeAddress,
-                                                   RequestAssembler.assembleGetFileListFromNodeRequest())
-                    response = json.loads(rawResponse)
-                    print('=== Get File List From Node ===\nFile List: {}'.format(response['fileList']))
         else:
             raise Exception('Need Connect To Directory Server First')
 

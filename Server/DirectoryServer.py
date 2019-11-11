@@ -10,7 +10,6 @@ from Server.Server import Server
 from Server.baseClient import baseClient
 from MessageAssembler.RequestAssembler import RequestAssembler
 from MessageAssembler.ResponseAssembler import ResponseAssembler
-from ast import literal_eval
 from Exception.ServerError import ServerError
 
 
@@ -195,7 +194,14 @@ class DirectoryServer(Server, baseClient):
     def createCloneNodeResponse(self, request):
         if len(self.nodeList) > 0:
             node = random.choice(self.nodeList)
-            return self.sendMessage(tuple(node[1]), request)
+            while True:
+                try:
+                    response = self.sendMessage(tuple(node[1]), request)
+                    break
+                except:
+                    self.nodeList.remove(node)
+                    node = random.choice(self.nodeList)
+            return response
         return ResponseAssembler.assembleErrorResponse('First Node Join')
 
     def cloneServer(self, address):
