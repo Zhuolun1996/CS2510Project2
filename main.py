@@ -10,7 +10,7 @@ from Util.readFileThread import readFileThread
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-C', '--clients', help='Number of clients', type=int, required=True)
-    parser.add_argument('-B', '--backups', help='Number of clients', type=int, required=True)
+    parser.add_argument('-B', '--backups', help='Number of backups', type=int, required=True)
     parser.add_argument('-S', '--nodes', help='Number of storage nodes', type=int, required=True)
     parser.add_argument('-M', '--files', help='Number of Files', type=int, required=True)
     parser.add_argument('-N', '--requests', help='Number of Requests', type=int, required=True)

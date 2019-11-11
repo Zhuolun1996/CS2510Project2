@@ -109,7 +109,7 @@ class Client(baseClient):
                     rawResponse = self.sendMessage(self.cachedNodeAddress,
                                                    RequestAssembler.assembleReadFileRequest(fileName))
                     response = json.loads(rawResponse)
-                    if self.output != false:
+                    if self.output != 'false':
                         print('=== Read File ===\nFile Name: {}\nContent: {}'.format(fileName, response['content']))
                     break
                 except ServerError:
