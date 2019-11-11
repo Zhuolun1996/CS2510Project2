@@ -1,10 +1,10 @@
-#README
+# README
 
-##Description
+## Description
 This project would simulate message transmission in P2PNetwork
 
-##Manual
-###Arguments:  
+## Manual
+### Arguments:  
 -C, --clients, Number of clients, e.g. 10  
 -B, --backups, Number of backups, e.g. 3  
 -S, --nodes, Number of storage nodes, e.g. 3  
@@ -14,9 +14,9 @@ This project would simulate message transmission in P2PNetwork
 -L, --length, File Length, e.g. 1   
 -O, --output, Output mode, `clean` || `debug` || `false`  
 
-###Example
+### Example
 `python3 main.py -C 3 -B 3 -S 5 -M 10 -N 20 -F 1000 -L 1 -O clean`   
-output:
+#### output:
 ```
 Server 10000 loop running in thread: Thread-1
 Server 10001 loop running in thread: Thread-2
