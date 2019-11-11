@@ -5,6 +5,7 @@ import shutil
 from pathlib import Path
 from Server.baseClient import baseClient
 import socket
+from Exception.ServerError import ServerError
 
 
 class Client(baseClient):
@@ -12,22 +13,23 @@ class Client(baseClient):
     Client class
     '''
 
-    def __init__(self, id, name, address, statisticHelper, primaryServer, backupServer, output):
+    def __init__(self, id, name, address, statisticHelper, primaryServerAddress, output):
         baseClient.__init__(self, id, name, address, statisticHelper, output)
         self.cachedNodeId = None
         self.cachedNodeAddress = None
-        self.cachedDirectoryServer = primaryServer
-        self.backupDirectoryServer = backupServer
+        self.cachedDirectoryServerAddress = primaryServerAddress
+        self.backupDirectoryServerAddress = None
 
     def switchBackupServer(self):
-        temp = self.cachedDirectoryServer
-        self.cachedDirectoryServer = self.backupDirectoryServer
-        self.backupDirectoryServer = temp
+        temp = self.cachedDirectoryServerAddress
+        self.cachedDirectoryServerAddress = self.backupDirectoryServerAddress
+        self.backupDirectoryServerAddress = temp
 
-    def setUp(self, FILE, LENGTH):
+    def setup(self, FILE, LENGTH):
         self.cleanFileDirectory()
         self.initFiles(FILE, LENGTH)
-        return self.requestConnect()
+        self.requestConnect()
+        self.getBackupServer()
 
     def getDirectoryPath(self):
         return Path('./Files/' + str(self.id))
@@ -60,53 +62,100 @@ class Client(baseClient):
 
     def requestConnect(self):
         try:
-            rawResponse = self.sendMessage(self.cachedDirectoryServer.getAddress(),
+            rawResponse = self.sendMessage(self.cachedDirectoryServerAddress,
                                            RequestAssembler.assembleConnectRequest())
             response = json.loads(rawResponse)
             self.cachedNodeId = response['nodeId']
             self.cachedNodeAddress = (response['nodeIp'], response['nodePort'])
-        except socket.timeout:
+        except ServerError:
+            print('cached')
             self.switchBackupServer()
             self.requestConnect()
 
     def requestGetFileListFromServer(self):
         try:
-            rawResponse = self.sendMessage(self.cachedDirectoryServer.getAddress(),
+            rawResponse = self.sendMessage(self.cachedDirectoryServerAddress,
                                            RequestAssembler.assembleGetFileListFromServerRequest())
             response = json.loads(rawResponse)
             print('=== Get File List From Directory Server ===\nFile List: {}'.format(response['fileList']))
-        except socket.timeout:
+        except ServerError:
             self.switchBackupServer()
             self.requestGetFileListFromServer()
 
     def requestNewFile(self, fileName, content):
         try:
-            self.sendMessage(self.cachedDirectoryServer.getAddress(),
+            self.sendMessage(self.cachedDirectoryServerAddress,
                              RequestAssembler.assembleNewFileRequest(fileName, content))
-        except socket.timeout:
+        except ServerError:
             self.switchBackupServer()
             self.requestGetFileListFromServer()
 
     def requestAddFile(self, fileName, content):
         if self.cachedNodeAddress != None:
-            self.sendMessage(self.cachedNodeAddress, RequestAssembler.assembleAddFileRequest(fileName, content, True))
+            try:
+                self.sendMessage(self.cachedNodeAddress,
+                                 RequestAssembler.assembleAddFileRequest(fileName, content, True))
+            except ServerError:
+                self.requestRemoveNode(self.cachedNodeId)
+                self.requestConnect()
+                try:
+                    self.sendMessage(self.cachedNodeAddress,
+                                     RequestAssembler.assembleAddFileRequest(fileName, content, True))
+                except ServerError:
+                    self.requestRemoveNode(self.cachedNodeId)
+                    self.requestConnect()
+                    self.sendMessage(self.cachedNodeAddress,
+                                     RequestAssembler.assembleAddFileRequest(fileName, content, True))
         else:
             raise Exception('Need Connect To Directory Server First')
 
     def requestReadFile(self, fileName):
         if self.cachedNodeAddress != None:
-            rawResponse = self.sendMessage(self.cachedNodeAddress, RequestAssembler.assembleReadFileRequest(fileName))
-            response = json.loads(rawResponse)
-            print('=== Read File ===\nFile Name: {}\nContent: {}'.format(fileName, response['content']))
+            try:
+                rawResponse = self.sendMessage(self.cachedNodeAddress,
+                                               RequestAssembler.assembleReadFileRequest(fileName))
+                response = json.loads(rawResponse)
+                print('=== Read File ===\nFile Name: {}\nContent: {}'.format(fileName, response['content']))
+            except ServerError:
+                self.requestRemoveNode(self.cachedNodeId)
+                self.requestConnect()
+                try:
+                    rawResponse = self.sendMessage(self.cachedNodeAddress,
+                                                   RequestAssembler.assembleReadFileRequest(fileName))
+                    response = json.loads(rawResponse)
+                    print('=== Read File ===\nFile Name: {}\nContent: {}'.format(fileName, response['content']))
+                except ServerError:
+                    self.requestRemoveNode(self.cachedNodeId)
+                    self.requestConnect()
+                    rawResponse = self.sendMessage(self.cachedNodeAddress,
+                                                   RequestAssembler.assembleReadFileRequest(fileName))
+                    response = json.loads(rawResponse)
+                    print('=== Read File ===\nFile Name: {}\nContent: {}'.format(fileName, response['content']))
         else:
             raise Exception('Need Connect To Directory Server First')
 
     def requestGetFileListFromNode(self):
         if self.cachedNodeAddress != None:
-            rawResponse = self.sendMessage(self.cachedNodeAddress,
-                                           RequestAssembler.assembleGetFileListFromServerRequest())
-            response = json.loads(rawResponse)
-            print('=== Get File List From Node ===\nFile List: {}'.format(response['fileList']))
+            try:
+                rawResponse = self.sendMessage(self.cachedNodeAddress,
+                                               RequestAssembler.assembleGetFileListFromNodeRequest())
+                response = json.loads(rawResponse)
+                print('=== Get File List From Node ===\nFile List: {}'.format(response['fileList']))
+            except ServerError:
+                self.requestRemoveNode(self.cachedNodeId)
+                self.requestConnect()
+                try:
+                    rawResponse = self.sendMessage(self.cachedNodeAddress,
+                                                   RequestAssembler.assembleGetFileListFromNodeRequest())
+                    response = json.loads(rawResponse)
+                    print('=== Get File List From Node ===\nFile List: {}'.format(response['fileList']))
+                except ServerError:
+                    self.requestRemoveNode(self.cachedNodeId)
+                    self.requestConnect()
+                    rawResponse = self.sendMessage(self.cachedNodeAddress,
+                                                   RequestAssembler.assembleGetFileListFromNodeRequest())
+                    response = json.loads(rawResponse)
+                    print('=== Get File List From Node ===\nFile List: {}'.format(response['fileList']))
         else:
             raise Exception('Need Connect To Directory Server First')
 
@@ -114,3 +163,16 @@ class Client(baseClient):
         with self.getDirectoryPath().joinpath(fileName).open('r') as file:
             content = file.read()
             return content
+
+    def requestGetBackupServer(self):
+        return self.sendMessage(self.cachedDirectoryServerAddress,
+                                RequestAssembler.assembleGetBackupServerRequest())
+
+    def getBackupServer(self):
+        rawResponse = self.requestGetBackupServer()
+        response = json.loads(rawResponse)
+        self.backupDirectoryServerAddress = (response['serverIp'], response['serverPort'])
+
+    def requestRemoveNode(self, nodeId):
+        return self.sendMessage(self.cachedDirectoryServerAddress,
+                                RequestAssembler.assembleStorageNodeRemoveRequest(str(nodeId)))

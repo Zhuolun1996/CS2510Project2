@@ -1,6 +1,8 @@
 import threading
 import socketserver
 from pathlib import Path
+import os
+import shutil
 
 
 class Server:
@@ -46,3 +48,22 @@ class Server:
 
     def getDirectoryPath(self):
         return Path('./Files/' + str(self.id))
+
+    def cleanFileDirectory(self):
+        '''
+        Clean file directory
+        :return:
+        '''
+        try:
+            shutil.rmtree(self.getDirectoryPath())
+            if self.output == 'debug':
+                print('clean directory success')
+        except:
+            if self.output == 'debug':
+                print('clean directory fail')
+
+    def initFilePath(self):
+        if not self.getDirectoryPath().parent.exists():
+            os.mkdir(self.getDirectoryPath().parent)
+        if not self.getDirectoryPath().exists():
+            os.mkdir(self.getDirectoryPath())

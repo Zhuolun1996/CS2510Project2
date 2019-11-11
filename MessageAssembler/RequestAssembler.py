@@ -56,3 +56,47 @@ class RequestAssembler:
         request = dict()
         request['head'] = 'getFileListFromNodeRequest'
         return json.dumps(request)
+
+    @staticmethod
+    def assembleCloneNodeRequest():
+        request = dict()
+        request['head'] = 'cloneNodeRequest'
+        return json.dumps(request)
+
+    @staticmethod
+    def assembleCopyServerRequest(nodeList, fileList, backupServerList):
+        request = dict()
+        request['head'] = 'copyServerRequest'
+        request['nodeList'] = nodeList
+        request['fileList'] = fileList
+        request['backupServerList'] = backupServerList
+        return json.dumps(request)
+
+    @staticmethod
+    def assembleCloneServerRequest(serverId):
+        request = dict()
+        request['head'] = 'cloneServerRequest'
+        request['serverId'] = serverId
+        return json.dumps(request)
+
+    @staticmethod
+    def assembleJoinBackupListRequest(serverId, serverIp, serverPort):
+        request = dict()
+        request['head'] = 'joinBackupListRequest'
+        request['serverId'] = serverId
+        request['serverIp'] = serverIp
+        request['serverPort'] = serverPort
+        return json.dumps(request)
+
+    @staticmethod
+    def assembleGetBackupServerRequest():
+        request = dict()
+        request['head'] = 'getBackupServerRequest'
+        return json.dumps(request)
+
+    @staticmethod
+    def assembleStorageNodeRemoveRequest(nodeId):
+        request = dict()
+        request['head'] = 'storageNodeRemoveRequest'
+        request['nodeId'] = nodeId
+        return json.dumps(request)

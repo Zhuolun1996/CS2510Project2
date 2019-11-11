@@ -1,7 +1,7 @@
 import socket
 import time
 from Util.SocketMessageManager import SocketMessageManager
-
+from Exception.ServerError import ServerError
 
 class baseClient:
     '''
@@ -23,23 +23,20 @@ class baseClient:
         :return: response
         '''
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-            sock.connect(address)
             try:
+                sock.connect(address)
                 SocketMessageManager.sendMessage(sock, bytes(message, 'utf-8'), self.statisticHelper)
                 startTime = time.time() * 1000
-            except:
-                raise Exception('sent message fail')
-            if self.output == 'debug':
-                print("Client {} send: {} to {}".format(self.id, message, str(address)))
-            sock.settimeout(0.5)
-            try:
+                if self.output == 'debug':
+                    print("Client {} send: {} to {}".format(self.id, message, str(address)))
+                sock.settimeout(0.5)
                 response = str(SocketMessageManager.recvMessage(sock, self.statisticHelper),
                                'utf-8')
                 self.statisticHelper.computeAverageResponseTime(startTime)
-            except socket.timeout:
+            except (socket.timeout, ConnectionRefusedError):
                 print("Server {} timeout".format(address))
                 print("Request Fault Tolerance Schema")
-                raise socket.timeout
+                raise ServerError('Server Error')
             if self.output == 'debug':
                 print("Client {} Received: {}".format(self.id, response))
             return response
