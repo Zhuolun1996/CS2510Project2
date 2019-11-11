@@ -4,7 +4,6 @@ from MessageAssembler.RequestAssembler import RequestAssembler
 import shutil
 from pathlib import Path
 from Server.baseClient import baseClient
-import socket
 from Exception.ServerError import ServerError
 
 
@@ -35,12 +34,6 @@ class Client(baseClient):
         return Path('./Files/' + str(self.id))
 
     def initFiles(self, num, length):
-        '''
-        Create files for peers (for test only)
-        :param num: number of files
-        :param length: each file length
-        :return:
-        '''
         if not self.getDirectoryPath().parent.exists():
             os.mkdir(self.getDirectoryPath().parent)
         for i in range(0, num):

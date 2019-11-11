@@ -5,7 +5,7 @@ from Exception.ServerError import ServerError
 
 class baseClient:
     '''
-    Client class
+    baseClient class
     '''
 
     def __init__(self, id, name, address, statisticHelper, output):
