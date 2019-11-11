@@ -121,6 +121,10 @@ class StorageNode(Server, baseClient):
         return ResponseAssembler.assembleGetFileListFromNodeResponse(self.fileList)
 
     def requestJoinNetwork(self):
+        '''
+        Request to add this node to directory server's node list.
+        :return:
+        '''
         while True:
             try:
                 rawResponse = self.sendMessage(self.cachedDirectoryServerAddress,

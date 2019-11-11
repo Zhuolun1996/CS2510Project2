@@ -20,9 +20,13 @@ class Client(baseClient):
         self.backupDirectoryServerAddress = None
 
     def switchBackupServer(self):
-        temp = self.cachedDirectoryServerAddress
+        '''
+        Switch current cached server to backup server,
+        and request for a new backup server.
+        :return:
+        '''
         self.cachedDirectoryServerAddress = self.backupDirectoryServerAddress
-        self.backupDirectoryServerAddress = temp
+        self.backupDirectoryServerAddress = self.getBackupServer()
 
     def setup(self, FILE, LENGTH):
         self.cleanFileDirectory()
@@ -54,6 +58,10 @@ class Client(baseClient):
             print('clean directory fail')
 
     def requestConnect(self):
+        '''
+        Request a storage node and cache this node.
+        :return:
+        '''
         try:
             rawResponse = self.sendMessage(self.cachedDirectoryServerAddress,
                                            RequestAssembler.assembleConnectRequest())
@@ -142,6 +150,11 @@ class Client(baseClient):
         self.backupDirectoryServerAddress = (response['serverIp'], response['serverPort'])
 
     def requestRemoveNode(self, nodeId):
+        '''
+        Remove a node from the node list
+        :param nodeId:
+        :return:
+        '''
         try:
             return self.sendMessage(self.cachedDirectoryServerAddress,
                                     RequestAssembler.assembleStorageNodeRemoveRequest(str(nodeId)))

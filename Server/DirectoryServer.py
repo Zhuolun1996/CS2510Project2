@@ -177,13 +177,30 @@ class DirectoryServer(Server, baseClient):
         return ResponseAssembler.assembleCloneServerResponse(nodeList, fileList, backupList)
 
     def requestJoinBackupList(self, serverId, serverIp, serverPort):
+        '''
+        Request to add this server to target server's the backup list.
+        :param serverId:
+        :param serverIp:
+        :param serverPort:
+        :return:
+        '''
         self.sendMessage(self.cachedDirectoryServerAddress,
                          RequestAssembler.assembleJoinBackupListRequest(serverId, serverIp, serverPort))
 
     def requestCloneServer(self, targetAddress):
+        '''
+        Request to make this sever to be another server's replica
+        :param targetAddress:
+        :return:
+        '''
         return self.sendMessage(tuple(targetAddress), RequestAssembler.assembleCloneServerRequest(self.id))
 
     def requestCopyServer(self, targetAddress):
+        '''
+        Request to make another server to be this server's replica
+        :param targetAddress:
+        :return:
+        '''
         return self.sendMessage(tuple(targetAddress), RequestAssembler.assembleCopyServerRequest(self.nodeList, self.fileList,
                                                                                           self.backupServerList))
 
