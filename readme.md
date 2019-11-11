@@ -1,7 +1,7 @@
 # README
 
 ## Description
-This project would simulate message transmission in P2PNetwork
+This project would simulate message transmission in Distributed File Storage System
 
 ## Manual
 ### Arguments:  
