@@ -193,7 +193,7 @@ class DirectoryServer(Server, baseClient):
 
     def createCloneNodeResponse(self, request):
         if len(self.nodeList) > 0:
-            node = random.choice(self.nodeList)
+            node = self.nodeList[0]
             while True:
                 try:
                     response = self.sendMessage(tuple(node[1]), request)

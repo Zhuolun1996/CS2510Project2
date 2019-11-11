@@ -84,7 +84,7 @@ class Client(baseClient):
     def requestNewFile(self, fileName, content):
         try:
             return self.sendMessage(self.cachedDirectoryServerAddress,
-                             RequestAssembler.assembleNewFileRequest(fileName, content))
+                                    RequestAssembler.assembleNewFileRequest(fileName, content))
         except ServerError:
             self.switchBackupServer()
             self.requestNewFile(fileName, content)
@@ -94,7 +94,7 @@ class Client(baseClient):
             while True:
                 try:
                     return self.sendMessage(self.cachedNodeAddress,
-                                     RequestAssembler.assembleAddFileRequest(fileName, content, True))
+                                            RequestAssembler.assembleAddFileRequest(fileName, content, True))
                 except ServerError:
                     self.requestRemoveNode(self.cachedNodeId)
                     self.requestConnect()
@@ -146,5 +146,9 @@ class Client(baseClient):
         self.backupDirectoryServerAddress = (response['serverIp'], response['serverPort'])
 
     def requestRemoveNode(self, nodeId):
-        return self.sendMessage(self.cachedDirectoryServerAddress,
-                                RequestAssembler.assembleStorageNodeRemoveRequest(str(nodeId)))
+        try:
+            return self.sendMessage(self.cachedDirectoryServerAddress,
+                                    RequestAssembler.assembleStorageNodeRemoveRequest(str(nodeId)))
+        except ServerError:
+            self.switchBackupServer()
+            self.requestRemoveNode()

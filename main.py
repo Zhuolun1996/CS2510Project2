@@ -120,7 +120,7 @@ def main():
         # test concurrent read file
         readThreads = list()
         for i in range(CLIENTS):
-            readThreads.append(readFileThread(clientList[0], str(int(i % FILES))))
+            readThreads.append(readFileThread(clientList[0], str(int(i % FILES)), REQUESTS, FREQUENCY))
         for readThread in readThreads:
             readThread.run()
 
@@ -129,15 +129,15 @@ def main():
 
     finally:
         primaryDirectoryServer.shutdownServer()
-        primaryDirectoryServer.statisticHelper.printStatisticData()
+        primaryDirectoryServer.statisticHelper.printStatisticData(primaryDirectoryServer.address[1])
         for backupServer in backupList:
-            backupServer.statisticHelper.printStatisticData()
+            backupServer.statisticHelper.printStatisticData(backupServer.address[1])
             backupServer.shutdownServer()
         for node in nodeList:
-            node.statisticHelper.printStatisticData()
+            node.statisticHelper.printStatisticData(node.address[1])
             node.shutdownServer()
         for client in clientList:
-            client.statisticHelper.printStatisticData()
+            client.statisticHelper.printStatisticData(client.address[1])
 
 
 if __name__ == "__main__":

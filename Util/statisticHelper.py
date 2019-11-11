@@ -14,8 +14,8 @@ class statisticHelper:
         responseTime = currentTime - startTime
         self.averageTime = (self.averageTime * (self.messageSend - 1) + responseTime) / self.messageSend
 
-    def printStatisticData(self):
-        print('======= Statistic Data ======')
+    def printStatisticData(self, _id):
+        print('======= Statistic Data: Server {} ======'.format(_id))
         print('Message Send: {}'.format(self.messageSend))
         print('Message Recv: {}'.format(self.messageRecv))
         print('Bytes Send: {}'.format(self.bytesSend))
